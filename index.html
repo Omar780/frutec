@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>FRUTEC — Prototipo móvil</title>
+<meta name="theme-color" content="#2C5F2D">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FRUTEC">
+<style>
+  :root{
+    --verde:#2C5F2D; --verde-osc:#1E421F; --moss:#97BC62; --naranja:#E8720C;
+    --tinte:#EFF5EC; --fondo:#F6F8F4; --texto:#2B2B2B; --gris:#6B7266;
+    --rojo:#C0392B; --ambar:#D9970B; --blanco:#FFFFFF; --radio:14px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    background:#DDE4D8; display:flex; justify-content:center; align-items:center;
+    color:var(--texto);
+  }
+  #phone{
+    width:390px; height:800px; max-height:100vh; background:var(--fondo);
+    border-radius:28px; overflow:hidden; display:flex; flex-direction:column;
+    box-shadow:0 18px 50px rgba(0,0,0,.30); position:relative;
+  }
+  @media (max-width:430px){
+    body{align-items:stretch;}
+    #phone{width:100%; height:100vh; border-radius:0; box-shadow:none;}
+  }
+  /* ---------- Login ---------- */
+  #login{
+    position:absolute; inset:0; z-index:20; background:var(--verde-osc);
+    display:flex; flex-direction:column; justify-content:center; align-items:center; padding:26px;
+  }
+  #login .logo-grande{width:84px; height:84px; margin-bottom:10px;}
+  #login h1{color:#fff; font-size:34px; letter-spacing:1px;}
+  #login .slogan{color:var(--moss); font-style:italic; font-size:13px; margin-bottom:26px;}
+  #login .caja{background:#fff; border-radius:var(--radio); padding:18px; width:100%; max-width:330px;}
+  #login .hint{color:#B9CBA6; font-size:11.5px; margin-top:16px; text-align:center;}
+  /* ---------- Cabecera ---------- */
+  header{
+    background:var(--verde); color:#fff; padding:12px 12px 10px 16px;
+    display:flex; align-items:center; gap:10px; flex-shrink:0;
+  }
+  header .logo{width:34px; height:34px; flex-shrink:0;}
+  header .titulos{flex:1; min-width:0;}
+  header h1{font-size:19px; letter-spacing:.5px;}
+  header .slogan{font-size:10.5px; color:#D6E8C6; font-style:italic;}
+  header .rol{font-size:10px; background:var(--verde-osc); padding:4px 8px; border-radius:10px; white-space:nowrap;}
+  header .icono{background:var(--verde-osc); border:none; border-radius:50%; width:32px; height:32px;
+    display:none; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;}
+  header .icono svg{width:17px; height:17px; stroke:#fff; fill:none; stroke-width:2;}
+  header .icono.ver{display:flex;}
+  /* ---------- Contenido ---------- */
+  main{flex:1; overflow-y:auto; padding:16px; padding-bottom:8px;}
+  .pantalla{display:none; animation:entra .18s ease-out;}
+  .pantalla.activa{display:block;}
+  @keyframes entra{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  @media (prefers-reduced-motion:reduce){ .pantalla{animation:none;} }
+  h2{font-size:17px; color:var(--verde-osc); margin-bottom:12px;}
+  .sub{font-size:12px; color:var(--gris); margin:-8px 0 12px;}
+  .tarjeta{background:var(--blanco); border-radius:var(--radio); padding:14px; margin-bottom:12px;
+    box-shadow:0 1px 4px rgba(30,66,31,.08);}
+  .resumen{display:flex; gap:10px;}
+  .resumen .tarjeta{flex:1; margin:0; text-align:center;}
+  .resumen .cifra{font-size:22px; font-weight:700; color:var(--verde);}
+  .resumen .cifra.naranja{color:var(--naranja);}
+  .resumen .etq{font-size:11px; color:var(--gris); margin-top:2px;}
+  .modulos{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;}
+  .modulo{
+    border:none; border-radius:var(--radio); padding:18px 12px; text-align:center;
+    font-size:14px; font-weight:600; color:#fff; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
+  .modulo svg{width:30px; height:30px;}
+  .modulo:active{filter:brightness(.92);}
+  .m-verde{background:var(--verde);} .m-naranja{background:var(--naranja);}
+  .modulo.ancho{grid-column:1 / -1; flex-direction:row; justify-content:center; padding:14px;}
+  .fila{display:flex; justify-content:space-between; align-items:center; padding:10px 0;
+    border-bottom:1px solid #EDF1EA; gap:10px;}
+  .fila:last-child{border-bottom:none;}
+  .fila .nombre{font-size:14px; font-weight:600;}
+  .fila .detalle{font-size:11.5px; color:var(--gris);}
+  .fila .monto{font-size:14px; font-weight:700; color:var(--verde); white-space:nowrap;}
+  .fila .monto.rojo{color:var(--rojo);}
+  .punto{width:10px; height:10px; border-radius:50%; flex-shrink:0;}
+  .p-verde{background:#3E8E41;} .p-ambar{background:var(--ambar);} .p-rojo{background:var(--rojo);}
+  .pill{font-size:10px; padding:3px 8px; border-radius:10px; background:var(--tinte); color:var(--verde-osc); white-space:nowrap;}
+  .pill.alerta{background:#FBEAD8; color:var(--naranja);}
+  .borrar{
+    background:#FBE9E7; border:none; border-radius:50%; width:28px; height:28px; flex-shrink:0;
+    color:var(--rojo); font-size:15px; font-weight:700; cursor:pointer; line-height:1;
+  }
+  .borrar:active{filter:brightness(.9);}
+  label{display:block; font-size:12px; font-weight:600; color:var(--verde-osc); margin:10px 0 4px;}
+  select,input{
+    width:100%; padding:11px 12px; font-size:15px; border:1.5px solid #CFDCC8;
+    border-radius:10px; background:#fff; color:var(--texto);
+  }
+  select:focus,input:focus{outline:2px solid var(--moss); border-color:var(--verde);}
+  .boton{
+    width:100%; padding:14px; margin-top:14px; font-size:15px; font-weight:700;
+    color:#fff; background:var(--naranja); border:none; border-radius:12px; cursor:pointer;
+  }
+  .boton.verde{background:var(--verde);}
+  .boton.plano{background:transparent; color:var(--verde); border:1.5px solid var(--verde); margin-top:8px;}
+  .boton.peligro{background:transparent; color:var(--rojo); border:1.5px solid var(--rojo); margin-top:8px;}
+  .boton:active{filter:brightness(.92);}
+  .aviso{font-size:12.5px; padding:10px 12px; border-radius:10px; margin-top:10px; display:none;}
+  .aviso.error{display:block; background:#FBE9E7; color:var(--rojo);}
+  .aviso.ok{display:block; background:var(--tinte); color:var(--verde-osc);}
+  .total-caja{background:var(--tinte); border-radius:10px; padding:10px 12px; margin-top:12px;
+    display:flex; justify-content:space-between; font-weight:700; font-size:15px; color:var(--verde-osc);}
+  .barras{display:flex; align-items:flex-end; gap:8px; height:120px; padding:8px 4px 0;}
+  .barra{flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; justify-content:flex-end;}
+  .barra .rel{width:100%; background:var(--moss); border-radius:6px 6px 0 0; min-height:4px; transition:height .3s;}
+  .barra.hoy .rel{background:var(--naranja);}
+  .barra .dia{font-size:10px; color:var(--gris);}
+  nav{
+    display:flex; background:var(--blanco); border-top:1px solid #E3E9DF; flex-shrink:0;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  nav button{
+    flex:1; background:none; border:none; padding:9px 2px 8px; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    font-size:9.5px; color:var(--gris); font-weight:600;
+  }
+  nav button svg{width:22px; height:22px; stroke:var(--gris); fill:none; stroke-width:1.8;}
+  nav button.activo{color:var(--verde);}
+  nav button.activo svg{stroke:var(--verde);}
+  #toast{
+    position:absolute; left:50%; bottom:86px; transform:translateX(-50%) translateY(20px);
+    background:var(--verde-osc); color:#fff; font-size:13px; padding:10px 18px;
+    border-radius:20px; opacity:0; pointer-events:none; transition:all .25s; white-space:nowrap; z-index:30;
+  }
+  #toast.ver{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div id="phone">
+
+  <!-- ============ LOGIN ============ -->
+  <div id="login">
+    <svg class="logo-grande" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="14" cy="24" r="9" fill="#97BC62"/>
+      <circle cx="27" cy="22" r="8" fill="#E8720C"/>
+      <path d="M20 10 q3 -6 8 -5" stroke="#D6E8C6" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      <path d="M6 32 h28" stroke="#D6E8C6" stroke-width="1.6" stroke-dasharray="3 3"/>
+    </svg>
+    <h1>FRUTEC</h1>
+    <div class="slogan">Cada fruta cuenta, cada venta suma.</div>
+    <div class="caja">
+      <label for="l-usuario">Usuario</label>
+      <input id="l-usuario" type="text" autocomplete="off" autocapitalize="none" placeholder="Ej. comerciante">
+      <label for="l-clave">Clave</label>
+      <input id="l-clave" type="password" placeholder="••••">
+      <div id="l-aviso" class="aviso"></div>
+      <button class="boton verde" onclick="iniciarSesion()">Entrar</button>
+    </div>
+    <div class="hint">Usuario de prueba: comerciante · clave 1234</div>
+  </div>
+
+  <header>
+    <svg class="logo" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="14" cy="24" r="9" fill="#97BC62"/>
+      <circle cx="27" cy="22" r="8" fill="#E8720C"/>
+      <path d="M20 10 q3 -6 8 -5" stroke="#D6E8C6" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      <path d="M6 32 h28" stroke="#D6E8C6" stroke-width="1.6" stroke-dasharray="3 3"/>
+    </svg>
+    <div class="titulos">
+      <h1>FRUTEC</h1>
+      <div class="slogan">Cada fruta cuenta, cada venta suma.</div>
+    </div>
+    <span class="rol" id="h-rol">—</span>
+    <button class="icono" id="b-config" title="Configuración" onclick="ir('config')" aria-label="Configuración">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 00-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 00-2-1.2L14 3h-4l-.5 2.6a7 7 0 00-2 1.2l-2.4-1-2 3.4 2 1.6a7 7 0 000 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 002 1.2L10 21h4l.5-2.6a7 7 0 002-1.2l2.4 1 2-3.4-2-1.6c.06-.4.1-.8.1-1.2z"/></svg>
+    </button>
+    <button class="icono" id="b-salir" title="Cerrar sesión" onclick="cerrarSesion()" aria-label="Cerrar sesión">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+    </button>
+  </header>
+
+  <main>
+    <!-- ============ INICIO ============ -->
+    <section id="p-inicio" class="pantalla activa">
+      <h2>Resumen de hoy</h2>
+      <div class="resumen">
+        <div class="tarjeta"><div class="cifra" id="r-ventas">S/ 0</div><div class="etq">Ventas del día</div></div>
+        <div class="tarjeta"><div class="cifra naranja" id="r-ops">0</div><div class="etq">Operaciones</div></div>
+        <div class="tarjeta"><div class="cifra" id="r-alertas" style="color:var(--rojo)">0</div><div class="etq">Alertas de stock</div></div>
+      </div>
+      <div class="modulos">
+        <button class="modulo m-naranja" onclick="ir('ventas')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M3 6h18M6 6l1.5 12a2 2 0 002 1.8h5a2 2 0 002-1.8L18 6M9 10v5M15 10v5"/></svg>
+          Ventas</button>
+        <button class="modulo m-verde" onclick="ir('compras')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 4h2l2.4 11h10.4L20 8H6"/></svg>
+          Compras</button>
+        <button class="modulo m-verde" onclick="ir('inventario')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M4 8l8-4 8 4v8l-8 4-8-4zM4 8l8 4 8-4M12 12v8"/></svg>
+          Inventario</button>
+        <button class="modulo m-naranja" onclick="ir('clientes')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5a3 3 0 010 6M17 14c2.4.6 4 2.6 4 6"/></svg>
+          Clientes</button>
+        <button class="modulo m-verde ancho" onclick="ir('reportes')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg>
+          Reportes</button>
+      </div>
+      <div class="tarjeta" style="margin-top:14px;">
+        <div style="font-size:12px; font-weight:700; color:var(--verde-osc); margin-bottom:6px;">Últimos movimientos</div>
+        <div id="lista-movs"></div>
+      </div>
+    </section>
+
+    <!-- ============ VENTAS ============ -->
+    <section id="p-ventas" class="pantalla">
+      <h2>Nueva venta</h2>
+      <p class="sub">El stock se valida y descuenta al confirmar.</p>
+      <div class="tarjeta">
+        <label for="v-prod">Producto</label>
+        <select id="v-prod"></select>
+        <label for="v-cant">Cantidad</label>
+        <input id="v-cant" type="number" inputmode="decimal" min="0.1" step="0.1" placeholder="Ej. 5">
+        <label for="v-cli">Cliente (opcional)</label>
+        <select id="v-cli"></select>
+        <label for="v-pago">Tipo de pago</label>
+        <select id="v-pago"><option value="contado">Al contado</option><option value="credito">A crédito</option></select>
+        <div class="total-caja"><span>Total</span><span id="v-total">S/ 0.00</span></div>
+        <div id="v-aviso" class="aviso"></div>
+        <button class="boton" onclick="registrarVenta()">Registrar venta</button>
+      </div>
+      <div class="tarjeta">
+        <div style="font-size:12px; font-weight:700; color:var(--verde-osc); margin-bottom:6px;">Ventas de hoy</div>
+        <div id="lista-ventas"></div>
+      </div>
+    </section>
+
+    <!-- ============ COMPRAS ============ -->
+    <section id="p-compras" class="pantalla">
+      <h2>Nueva compra</h2>
+      <p class="sub">La compra confirmada suma stock y actualiza el costo.</p>
+      <div class="tarjeta">
+        <label for="c-prod">Producto</label>
+        <select id="c-prod"></select>
+        <label for="c-cant">Cantidad</label>
+        <input id="c-cant" type="number" inputmode="decimal" min="0.1" step="0.1" placeholder="Ej. 20">
+        <label for="c-precio">Precio unitario de compra (S/)</label>
+        <input id="c-precio" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="Ej. 2.50">
+        <label for="c-prov">Proveedor</label>
+        <select id="c-prov">
+          <option>Frutas del Valle S.A.C.</option>
+          <option>Mercado Mayorista</option>
+          <option>Cooperativa San Martín</option>
+        </select>
+        <div id="c-aviso" class="aviso"></div>
+        <button class="boton verde" onclick="registrarCompra()">Registrar compra</button>
+      </div>
+      <div class="tarjeta">
+        <div style="font-size:12px; font-weight:700; color:var(--verde-osc); margin-bottom:6px;">Compras de hoy</div>
+        <div id="lista-compras"></div>
+      </div>
+    </section>
+
+    <!-- ============ INVENTARIO ============ -->
+    <section id="p-inventario" class="pantalla">
+      <h2>Inventario</h2>
+      <p class="sub">Semáforo: verde sano · ámbar bajo mínimo · rojo agotado.</p>
+      <div class="tarjeta" id="lista-inv"></div>
+    </section>
+
+    <!-- ============ CLIENTES ============ -->
+    <section id="p-clientes" class="pantalla">
+      <h2>Clientes</h2>
+      <p class="sub">Saldos pendientes de ventas a crédito.</p>
+      <div class="tarjeta" id="lista-cli"></div>
+    </section>
+
+    <!-- ============ REPORTES ============ -->
+    <section id="p-reportes" class="pantalla">
+      <h2>Reportes</h2>
+      <div class="tarjeta">
+        <div style="font-size:12px; font-weight:700; color:var(--verde-osc); margin-bottom:4px;">Ventas de la semana (S/)</div>
+        <div class="barras" id="grafico"></div>
+      </div>
+      <div class="resumen">
+        <div class="tarjeta"><div class="cifra" id="rep-total">S/ 0</div><div class="etq">Total semana</div></div>
+        <div class="tarjeta"><div class="cifra naranja" id="rep-margen">0%</div><div class="etq">Margen promedio</div></div>
+      </div>
+      <button class="boton verde" onclick="toast('Reporte PDF generado (simulado en el prototipo)')">Exportar a PDF</button>
+      <button class="boton plano" onclick="toast('Reporte Excel generado (simulado en el prototipo)')">Exportar a Excel</button>
+    </section>
+
+    <!-- ============ CONFIGURACIÓN (solo Administrador) ============ -->
+    <section id="p-config" class="pantalla">
+      <h2>Configuración</h2>
+      <p class="sub">Panel exclusivo del perfil Administrador.</p>
+      <div class="tarjeta">
+        <div style="font-size:12px; font-weight:700; color:var(--verde-osc); margin-bottom:6px;">Agregar producto</div>
+        <label for="n-nombre">Nombre</label>
+        <input id="n-nombre" type="text" placeholder="Ej. Mango">
+        <label for="n-unidad">Unidad</label>
+        <select id="n-unidad"><option>kg</option><option>unid</option><option>mano</option><option>caja</option><option>jaba</option></select>
+        <label for="n-precio">Precio de venta (S/)</label>
+        <input id="n-precio" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="Ej. 6.00">
+        <label for="n-minimo">Stock mínimo</label>
+        <input id="n-minimo" type="number" inputmode="decimal" min="0" step="1" placeholder="Ej. 10">
+        <div id="n-aviso" class="aviso"></div>
+        <button class="boton verde" onclick="agregarProducto()">Agregar producto</button>
+      </div>
+      <div class="tarjeta">
+        <div style="font-size:12px; font-weight:700; color:var(--verde-osc); margin-bottom:6px;">Precios y mínimos</div>
+        <p class="sub" style="margin:0 0 8px;">Edita el valor y toca fuera del campo para guardar.</p>
+        <div id="lista-precios"></div>
+      </div>
+      <div class="tarjeta">
+        <div style="font-size:12px; font-weight:700; color:var(--verde-osc); margin-bottom:6px;">Clave del perfil Comerciante</div>
+        <label for="cfg-clave">Nueva clave</label>
+        <input id="cfg-clave" type="text" autocomplete="off" placeholder="Clave actual: se mantiene si dejas vacío">
+        <button class="boton verde" onclick="cambiarClave()">Guardar clave</button>
+      </div>
+      <div class="tarjeta">
+        <div style="font-size:12px; font-weight:700; color:var(--verde-osc); margin-bottom:6px;">Datos del dispositivo</div>
+        <button class="boton peligro" style="margin-top:0" onclick="reiniciarDatos()">Reiniciar datos del dispositivo</button>
+      </div>
+    </section>
+  </main>
+
+  <nav>
+    <button data-p="inicio" class="activo" onclick="ir('inicio')">
+      <svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6h-6v6H4a1 1 0 01-1-1z"/></svg>Inicio</button>
+    <button data-p="ventas" onclick="ir('ventas')">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18M6 6l1.5 12a2 2 0 002 1.8h5a2 2 0 002-1.8L18 6"/></svg>Ventas</button>
+    <button data-p="compras" onclick="ir('compras')">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 4h2l2.4 11h10.4L20 8H6"/></svg>Compras</button>
+    <button data-p="inventario" onclick="ir('inventario')">
+      <svg viewBox="0 0 24 24"><path d="M4 8l8-4 8 4v8l-8 4-8-4zM4 8l8 4 8-4M12 12v8"/></svg>Inventario</button>
+    <button data-p="clientes" onclick="ir('clientes')">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>Clientes</button>
+    <button data-p="reportes" onclick="ir('reportes')">
+      <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg>Reportes</button>
+  </nav>
+  <div id="toast"></div>
+</div>
+
+<script>
+/* Estado del prototipo. Se guarda en el propio dispositivo (localStorage). */
+const CLAVE = "frutec-v2";
+const estadoInicial = () => ({
+  usuarios: [
+    { usuario:"admin",       clave:"7777", rol:"Administrador" },
+    { usuario:"comerciante", clave:"1234", rol:"Comerciante" },
+  ],
+  productos: [
+    { id:1, nombre:"Manzana", unidad:"kg",   precio:5.50, costo:3.20, stock:24,  minimo:10 },
+    { id:2, nombre:"Naranja", unidad:"kg",   precio:3.80, costo:2.10, stock:8,   minimo:12 },
+    { id:3, nombre:"Plátano", unidad:"mano", precio:4.00, costo:2.40, stock:35,  minimo:15 },
+    { id:4, nombre:"Papaya",  unidad:"unid", precio:7.00, costo:4.50, stock:0,   minimo:5  },
+    { id:5, nombre:"Piña",    unidad:"unid", precio:6.50, costo:4.00, stock:14,  minimo:6  },
+  ],
+  clientes: [
+    { id:0, nombre:"— Venta directa —", tipo:"", saldo:0 },
+    { id:1, nombre:"Bodega Rosita",     tipo:"Minorista", saldo:45.00 },
+    { id:2, nombre:"Restaurante El Huerto", tipo:"Mayorista", saldo:0 },
+    { id:3, nombre:"Cooperativa San Martín", tipo:"Cooperativa", saldo:120.50 },
+  ],
+  ventasHoy: [],
+  comprasHoy: [],
+  siguienteId: 100,
+  semana: [180, 245, 210, 300, 265, 190],
+});
+
+let estado = estadoInicial();
+try {
+  const g = localStorage.getItem(CLAVE);
+  if (g) {
+    estado = JSON.parse(g);
+    if(!estado.usuarios || !estado.comprasHoy) estado = estadoInicial(); // datos de versión anterior
+  }
+} catch (e) { /* si el navegador bloquea el almacenamiento, sigue en memoria */ }
+
+function guardar(){
+  try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) {}
+}
+
+/* ---------- Sesión (solo en memoria: al cerrar el navegador se pide clave de nuevo) ---------- */
+let sesion = null;
+const esAdmin = () => sesion && sesion.rol === "Administrador";
+
+function iniciarSesion(){
+  const av = document.getElementById("l-aviso"); av.className = "aviso";
+  const u = document.getElementById("l-usuario").value.trim().toLowerCase();
+  const c = document.getElementById("l-clave").value;
+  const enc = estado.usuarios.find(x => x.usuario === u && x.clave === c);
+  if(!enc){ av.className = "aviso error"; av.textContent = "Usuario o clave incorrectos."; return; }
+  sesion = { usuario: enc.usuario, rol: enc.rol };
+  document.getElementById("l-clave").value = "";
+  document.getElementById("login").style.display = "none";
+  document.getElementById("h-rol").textContent = sesion.rol;
+  document.getElementById("b-config").classList.toggle("ver", esAdmin());
+  document.getElementById("b-salir").classList.add("ver");
+  ir("inicio");
+  toast("Bienvenido, " + sesion.usuario);
+}
+
+function cerrarSesion(){
+  sesion = null;
+  document.getElementById("login").style.display = "flex";
+  document.getElementById("b-config").classList.remove("ver");
+  document.getElementById("b-salir").classList.remove("ver");
+  document.getElementById("h-rol").textContent = "—";
+  document.getElementById("l-usuario").value = "";
+}
+
+/* ---------- Utilidades ---------- */
+const $ = id => document.getElementById(id);
+const soles = n => "S/ " + n.toFixed(2);
+const esc = t => String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+function ir(p){
+  if(p === "config" && !esAdmin()){ toast("Solo el Administrador puede configurar"); return; }
+  document.querySelectorAll(".pantalla").forEach(x=>x.classList.remove("activa"));
+  $("p-"+p).classList.add("activa");
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("activo", b.dataset.p===p));
+  document.querySelector("main").scrollTop = 0;
+  render();
+}
+
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("ver");
+  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove("ver"), 2400);
+}
+
+function semaforo(pr){
+  if(pr.stock <= 0) return ["p-rojo","Agotado"];
+  if(pr.stock < pr.minimo) return ["p-ambar","Bajo mínimo"];
+  return ["p-verde","Stock sano"];
+}
+
+function botonBorrar(fn, id){
+  return esAdmin() ? '<button class="borrar" aria-label="Eliminar" onclick="'+fn+'('+id+')">✕</button>' : '';
+}
+
+/* ---------- Ventas ---------- */
+function totalVenta(){
+  const pr = estado.productos.find(p=>p.id==$("v-prod").value);
+  const c = parseFloat($("v-cant").value) || 0;
+  $("v-total").textContent = soles(pr ? pr.precio*c : 0);
+}
+function registrarVenta(){
+  const av = $("v-aviso"); av.className = "aviso";
+  const pr = estado.productos.find(p=>p.id==$("v-prod").value);
+  if(!pr){ av.className="aviso error"; av.textContent="No hay productos. Pide al Administrador que agregue uno."; return; }
+  const cant = parseFloat($("v-cant").value);
+  if(!cant || cant<=0){ av.className="aviso error"; av.textContent="Ingresa una cantidad mayor a cero."; return; }
+  if(cant > pr.stock){
+    av.className="aviso error";
+    av.textContent = "Stock insuficiente: solo quedan "+pr.stock+" "+pr.unidad+" de "+pr.nombre+".";
+    return;
+  }
+  const cli = estado.clientes.find(c=>c.id==$("v-cli").value);
+  const credito = $("v-pago").value==="credito";
+  if(credito && cli.id===0){ av.className="aviso error"; av.textContent="Una venta a crédito necesita un cliente."; return; }
+  const total = pr.precio*cant;
+  pr.stock = Math.round((pr.stock - cant)*100)/100;
+  if(credito) cli.saldo += total;
+  estado.ventasHoy.push({ id: estado.siguienteId++, prodId: pr.id, prod:pr.nombre, cant, unidad:pr.unidad, total, cliId: cli.id, cliente: cli.id?cli.nombre:null, credito });
+  $("v-cant").value = "";
+  av.className="aviso ok"; av.textContent="Venta registrada. Stock actualizado de "+pr.nombre+": "+pr.stock+" "+pr.unidad+".";
+  toast("Venta registrada: "+soles(total));
+  guardar(); render();
+}
+function eliminarVenta(id){
+  const v = estado.ventasHoy.find(x=>x.id===id); if(!v) return;
+  if(!confirm("¿Eliminar la venta de "+v.cant+" "+v.unidad+" de "+v.prod+"? El stock se devolverá al inventario.")) return;
+  const pr = estado.productos.find(p=>p.id===v.prodId);
+  if(pr) pr.stock = Math.round((pr.stock + v.cant)*100)/100;
+  if(v.credito){
+    const cli = estado.clientes.find(c=>c.id===v.cliId);
+    if(cli) cli.saldo = Math.max(0, Math.round((cli.saldo - v.total)*100)/100);
+  }
+  estado.ventasHoy = estado.ventasHoy.filter(x=>x.id!==id);
+  toast("Venta eliminada; stock devuelto");
+  guardar(); render();
+}
+
+/* ---------- Compras ---------- */
+function registrarCompra(){
+  const av = $("c-aviso"); av.className = "aviso";
+  const pr = estado.productos.find(p=>p.id==$("c-prod").value);
+  if(!pr){ av.className="aviso error"; av.textContent="No hay productos. Pide al Administrador que agregue uno."; return; }
+  const cant = parseFloat($("c-cant").value);
+  const precio = parseFloat($("c-precio").value);
+  if(!cant || cant<=0){ av.className="aviso error"; av.textContent="Ingresa una cantidad mayor a cero."; return; }
+  if(!precio || precio<=0){ av.className="aviso error"; av.textContent="Ingresa un precio de compra válido."; return; }
+  pr.costo = Math.round(((pr.costo*pr.stock + precio*cant)/(pr.stock+cant))*100)/100;
+  pr.stock = Math.round((pr.stock + cant)*100)/100;
+  estado.comprasHoy.push({ id: estado.siguienteId++, prodId: pr.id, prod:pr.nombre, cant, unidad:pr.unidad, precio, total: precio*cant, prov: $("c-prov").value });
+  $("c-cant").value=""; $("c-precio").value="";
+  av.className="aviso ok"; av.textContent="Compra registrada. Nuevo stock de "+pr.nombre+": "+pr.stock+" "+pr.unidad+" (costo promedio "+soles(pr.costo)+").";
+  toast("Compra registrada");
+  guardar(); render();
+}
+function eliminarCompra(id){
+  const c = estado.comprasHoy.find(x=>x.id===id); if(!c) return;
+  const pr = estado.productos.find(p=>p.id===c.prodId);
+  if(pr && pr.stock < c.cant){
+    alert("No se puede eliminar: el stock actual de "+pr.nombre+" ("+pr.stock+" "+pr.unidad+") ya es menor que la cantidad comprada. Parte de esa mercadería ya se vendió.");
+    return;
+  }
+  if(!confirm("¿Eliminar la compra de "+c.cant+" "+c.unidad+" de "+c.prod+"? El stock se descontará del inventario.")) return;
+  if(pr) pr.stock = Math.round((pr.stock - c.cant)*100)/100;
+  estado.comprasHoy = estado.comprasHoy.filter(x=>x.id!==id);
+  toast("Compra eliminada; stock descontado");
+  guardar(); render();
+}
+
+/* ---------- Clientes y productos ---------- */
+function eliminarCliente(id){
+  const cli = estado.clientes.find(c=>c.id===id); if(!cli) return;
+  if(cli.saldo > 0){ alert("No se puede eliminar a "+cli.nombre+": tiene un saldo pendiente de "+soles(cli.saldo)+"."); return; }
+  if(!confirm("¿Eliminar al cliente "+cli.nombre+"?")) return;
+  estado.clientes = estado.clientes.filter(c=>c.id!==id);
+  toast("Cliente eliminado");
+  guardar(); render();
+}
+function eliminarProducto(id){
+  const pr = estado.productos.find(p=>p.id===id); if(!pr) return;
+  if(!confirm("¿Eliminar el producto "+pr.nombre+"? Las ventas y compras ya registradas se conservan.")) return;
+  estado.productos = estado.productos.filter(p=>p.id!==id);
+  toast("Producto eliminado");
+  guardar(); render();
+}
+function agregarProducto(){
+  const av = $("n-aviso"); av.className = "aviso";
+  const nombre = $("n-nombre").value.trim();
+  const precio = parseFloat($("n-precio").value);
+  const minimo = parseFloat($("n-minimo").value);
+  if(!nombre){ av.className="aviso error"; av.textContent="Escribe el nombre del producto."; return; }
+  if(!precio || precio<=0){ av.className="aviso error"; av.textContent="Ingresa un precio de venta válido."; return; }
+  estado.productos.push({ id: estado.siguienteId++, nombre, unidad: $("n-unidad").value, precio,
+    costo: 0, stock: 0, minimo: (minimo>=0 ? minimo : 0) });
+  $("n-nombre").value=""; $("n-precio").value=""; $("n-minimo").value="";
+  av.className="aviso ok"; av.textContent="Producto agregado. Registra una compra para darle stock.";
+  guardar(); render();
+}
+function editarProducto(id, campo, valor){
+  const pr = estado.productos.find(p=>p.id===id); if(!pr) return;
+  const v = parseFloat(valor);
+  if(isNaN(v) || v < 0){ toast("Valor no válido"); render(); return; }
+  pr[campo] = v;
+  guardar(); render();
+  toast("Cambio guardado");
+}
+function cambiarClave(){
+  const nueva = $("cfg-clave").value.trim();
+  if(!nueva){ toast("Escribe la nueva clave"); return; }
+  estado.usuarios.find(u=>u.usuario==="comerciante").clave = nueva;
+  $("cfg-clave").value="";
+  guardar();
+  toast("Clave del comerciante actualizada");
+}
+function reiniciarDatos(){
+  if(!confirm("¿Borrar todos los datos de este dispositivo y volver a los datos de ejemplo?")) return;
+  estado = estadoInicial();
+  guardar(); render();
+  toast("Datos reiniciados");
+}
+
+/* ---------- Render ---------- */
+function render(){
+  const opciones = estado.productos.map(p=>'<option value="'+p.id+'">'+esc(p.nombre)+' — '+soles(p.precio)+' / '+p.unidad+' (stock: '+p.stock+')</option>').join("");
+  const vSel = $("v-prod").value, cSel = $("c-prod").value;
+  $("v-prod").innerHTML = opciones; if(vSel) $("v-prod").value = vSel;
+  $("c-prod").innerHTML = opciones; if(cSel) $("c-prod").value = cSel;
+  const cliSel = $("v-cli").value;
+  $("v-cli").innerHTML = estado.clientes.map(c=>'<option value="'+c.id+'">'+esc(c.nombre)+'</option>').join("");
+  if(cliSel) $("v-cli").value = cliSel;
+  totalVenta();
+
+  const totalHoy = estado.ventasHoy.reduce((a,v)=>a+v.total,0);
+  $("r-ventas").textContent = soles(totalHoy);
+  $("r-ops").textContent = estado.ventasHoy.length + estado.comprasHoy.length;
+  $("r-alertas").textContent = estado.productos.filter(p=>p.stock<p.minimo).length;
+
+  /* movimientos combinados (solo lectura en Inicio) */
+  const movs = [
+    ...estado.ventasHoy.map(v=>({ id:v.id, tipo:"Venta", desc:v.cant+" "+v.unidad+" de "+v.prod, monto:v.total })),
+    ...estado.comprasHoy.map(c=>({ id:c.id, tipo:"Compra", desc:c.cant+" "+c.unidad+" de "+c.prod+" — "+c.prov, monto:-c.total })),
+  ].sort((a,b)=>b.id-a.id);
+  $("lista-movs").innerHTML = movs.length
+    ? movs.slice(0,5).map(m=>
+        '<div class="fila"><div><div class="nombre">'+m.tipo+'</div><div class="detalle">'+esc(m.desc)+'</div></div>'+
+        '<div class="monto'+(m.monto<0?' rojo':'')+'">'+(m.monto<0?"− ":"")+soles(Math.abs(m.monto))+'</div></div>').join("")
+    : '<div class="detalle" style="font-size:12px;color:var(--gris)">Aún no hay movimientos hoy. Registra tu primera venta.</div>';
+
+  /* ventas con opción de eliminar (Administrador) */
+  $("lista-ventas").innerHTML = estado.ventasHoy.length
+    ? estado.ventasHoy.slice().reverse().map(v=>
+        '<div class="fila"><div style="flex:1"><div class="nombre">'+v.cant+' '+v.unidad+' — '+esc(v.prod)+'</div>'+
+        '<div class="detalle">'+(v.cliente?esc(v.cliente):"Venta directa")+(v.credito?' · crédito':'')+'</div></div>'+
+        '<div class="monto">'+soles(v.total)+'</div>'+botonBorrar('eliminarVenta', v.id)+'</div>').join("")
+    : '<div class="detalle" style="font-size:12px;color:var(--gris)">Sin ventas registradas.</div>';
+
+  /* compras con opción de eliminar (Administrador) */
+  $("lista-compras").innerHTML = estado.comprasHoy.length
+    ? estado.comprasHoy.slice().reverse().map(c=>
+        '<div class="fila"><div style="flex:1"><div class="nombre">'+c.cant+' '+c.unidad+' — '+esc(c.prod)+'</div>'+
+        '<div class="detalle">'+esc(c.prov)+' · '+soles(c.precio)+' c/u</div></div>'+
+        '<div class="monto rojo">− '+soles(c.total)+'</div>'+botonBorrar('eliminarCompra', c.id)+'</div>').join("")
+    : '<div class="detalle" style="font-size:12px;color:var(--gris)">Sin compras registradas.</div>';
+
+  /* inventario */
+  $("lista-inv").innerHTML = estado.productos.length
+    ? estado.productos.map(p=>{
+        const [clase, texto] = semaforo(p);
+        return '<div class="fila"><span class="punto '+clase+'"></span>'+
+          '<div style="flex:1"><div class="nombre">'+esc(p.nombre)+'</div>'+
+          '<div class="detalle">'+p.stock+' '+p.unidad+' · mínimo '+p.minimo+' · venta '+soles(p.precio)+'</div></div>'+
+          '<span class="pill'+(clase!=="p-verde"?' alerta':'')+'">'+texto+'</span>'+botonBorrar('eliminarProducto', p.id)+'</div>';
+      }).join("")
+    : '<div class="detalle" style="font-size:12px;color:var(--gris)">No hay productos. El Administrador puede agregarlos en Configuración.</div>';
+
+  /* clientes */
+  $("lista-cli").innerHTML = estado.clientes.filter(c=>c.id!==0).map(c=>
+    '<div class="fila"><div style="flex:1"><div class="nombre">'+esc(c.nombre)+'</div><div class="detalle">'+esc(c.tipo)+'</div></div>'+
+    '<div class="monto'+(c.saldo>0?' rojo':'')+'">'+(c.saldo>0?"Debe "+soles(c.saldo):"Al día")+'</div>'+botonBorrar('eliminarCliente', c.id)+'</div>').join("");
+
+  /* configuración: edición de precios y mínimos */
+  $("lista-precios").innerHTML = estado.productos.map(p=>
+    '<div class="fila"><div style="flex:1"><div class="nombre">'+esc(p.nombre)+'</div><div class="detalle">'+p.unidad+'</div></div>'+
+    '<div style="width:86px"><label style="margin:0 0 2px;font-size:10px">Precio S/</label>'+
+    '<input type="number" min="0.01" step="0.01" value="'+p.precio+'" style="padding:7px 8px;font-size:13px" onchange="editarProducto('+p.id+',\'precio\',this.value)"></div>'+
+    '<div style="width:74px"><label style="margin:0 0 2px;font-size:10px">Mínimo</label>'+
+    '<input type="number" min="0" step="1" value="'+p.minimo+'" style="padding:7px 8px;font-size:13px" onchange="editarProducto('+p.id+',\'minimo\',this.value)"></div></div>'
+  ).join("") || '<div class="detalle" style="font-size:12px;color:var(--gris)">Sin productos.</div>';
+
+  /* reportes */
+  const dias = ["Lun","Mar","Mié","Jue","Vie","Sáb","Hoy"];
+  const datos = [...estado.semana, totalHoy];
+  const max = Math.max(...datos, 1);
+  $("grafico").innerHTML = datos.map((v,i)=>
+    '<div class="barra'+(i===6?' hoy':'')+'"><div class="rel" style="height:'+Math.max(4,(v/max)*100)+'%"></div><div class="dia">'+dias[i]+'</div></div>').join("");
+  $("rep-total").textContent = soles(datos.reduce((a,b)=>a+b,0));
+  const conVenta = estado.productos.filter(p=>p.precio>0);
+  const margen = conVenta.length
+    ? conVenta.reduce((a,p)=>a+((p.precio-p.costo)/p.precio),0)/conVenta.length*100 : 0;
+  $("rep-margen").textContent = margen.toFixed(0)+"%";
+}
+
+$("v-prod").addEventListener("change", totalVenta);
+$("v-cant").addEventListener("input", totalVenta);
+$("l-clave").addEventListener("keydown", e=>{ if(e.key==="Enter") iniciarSesion(); });
+render();
+</script>
+</body>
+</html>
